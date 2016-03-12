@@ -1,4 +1,4 @@
-module Counter where
+module Counter (Model, init, Action, update, view) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -8,6 +8,10 @@ import Signal exposing (Address)
 
 
 type alias Model = Int
+
+
+init : Int -> Model
+init count = count
 
 
 type Action =
@@ -33,4 +37,10 @@ view address model =
 
 countStyle : Attribute
 countStyle =
-  class "counter"
+  style
+    [ ("font-size", "20px")
+    , ("font-family", "monospace")
+    , ("display", "inline-block")
+    , ("width", "50px")
+    , ("text-align", "center")
+    ]

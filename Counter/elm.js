@@ -10335,7 +10335,11 @@ Elm.Counter.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var countStyle = $Html$Attributes.$class("counter");
+   var countStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "font-size",_1: "20px"}
+                                                   ,{ctor: "_Tuple2",_0: "font-family",_1: "monospace"}
+                                                   ,{ctor: "_Tuple2",_0: "display",_1: "inline-block"}
+                                                   ,{ctor: "_Tuple2",_0: "width",_1: "50px"}
+                                                   ,{ctor: "_Tuple2",_0: "text-align",_1: "center"}]));
    var update = F2(function (action,model) {    var _p0 = action;if (_p0.ctor === "Increment") {    return model + 1;} else {    return model - 1;}});
    var Decrement = {ctor: "Decrement"};
    var Increment = {ctor: "Increment"};
@@ -10346,7 +10350,45 @@ Elm.Counter.make = function (_elm) {
               ,A2($Html.div,_U.list([countStyle]),_U.list([$Html.text($Basics.toString(model))]))
               ,A2($Html.button,_U.list([A2($Html$Events.onClick,address,Increment)]),_U.list([$Html.text("+")]))]));
    });
-   return _elm.Counter.values = {_op: _op,Increment: Increment,Decrement: Decrement,update: update,view: view,countStyle: countStyle};
+   var init = function (count) {    return count;};
+   return _elm.Counter.values = {_op: _op,init: init,update: update,view: view};
+};
+Elm.CounterPair = Elm.CounterPair || {};
+Elm.CounterPair.make = function (_elm) {
+   "use strict";
+   _elm.CounterPair = _elm.CounterPair || {};
+   if (_elm.CounterPair.values) return _elm.CounterPair.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Counter = Elm.Counter.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var Bottom = function (a) {    return {ctor: "Bottom",_0: a};};
+   var Top = function (a) {    return {ctor: "Top",_0: a};};
+   var Reset = {ctor: "Reset"};
+   var view = F2(function (address,model) {
+      return A2($Html.div,
+      _U.list([]),
+      _U.list([A2($Counter.view,A2($Signal.forwardTo,address,Top),model.topCounter)
+              ,A2($Counter.view,A2($Signal.forwardTo,address,Bottom),model.bottomCounter)
+              ,A2($Html.button,_U.list([A2($Html$Events.onClick,address,Reset)]),_U.list([$Html.text("Reset")]))]));
+   });
+   var init = F2(function (top,bottom) {    return {topCounter: $Counter.init(top),bottomCounter: $Counter.init(bottom)};});
+   var update = F2(function (action,model) {
+      var _p0 = action;
+      switch (_p0.ctor)
+      {case "Reset": return A2(init,5,9);
+         case "Top": return _U.update(model,{topCounter: A2($Counter.update,_p0._0,model.topCounter)});
+         default: return _U.update(model,{bottomCounter: A2($Counter.update,_p0._0,model.bottomCounter)});}
+   });
+   var Model = F2(function (a,b) {    return {topCounter: a,bottomCounter: b};});
+   return _elm.CounterPair.values = {_op: _op,init: init,update: update,view: view,Model: Model};
 };
 Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
@@ -10355,7 +10397,7 @@ Elm.Main.make = function (_elm) {
    if (_elm.Main.values) return _elm.Main.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
-   $Counter = Elm.Counter.make(_elm),
+   $CounterPair = Elm.CounterPair.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
@@ -10363,6 +10405,6 @@ Elm.Main.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $StartApp$Simple = Elm.StartApp.Simple.make(_elm);
    var _op = {};
-   var main = $StartApp$Simple.start({model: 0,update: $Counter.update,view: $Counter.view});
+   var main = $StartApp$Simple.start({model: A2($CounterPair.init,1,3),update: $CounterPair.update,view: $CounterPair.view});
    return _elm.Main.values = {_op: _op,main: main};
 };
