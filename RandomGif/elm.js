@@ -11049,55 +11049,96 @@ Elm.RandomGif.make = function (_elm) {
                                   ,headerStyle: headerStyle
                                   ,imgStyle: imgStyle};
 };
-Elm.RandomGifPair = Elm.RandomGifPair || {};
-Elm.RandomGifPair.make = function (_elm) {
+Elm.RandomGifList = Elm.RandomGifList || {};
+Elm.RandomGifList.make = function (_elm) {
    "use strict";
-   _elm.RandomGifPair = _elm.RandomGifPair || {};
-   if (_elm.RandomGifPair.values) return _elm.RandomGifPair.values;
+   _elm.RandomGifList = _elm.RandomGifList || {};
+   if (_elm.RandomGifList.values) return _elm.RandomGifList.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $RandomGif = Elm.RandomGif.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var Right = function (a) {    return {ctor: "Right",_0: a};};
-   var Left = function (a) {    return {ctor: "Left",_0: a};};
+   var is13 = function (code) {    return _U.eq(code,13) ? $Result.Ok({ctor: "_Tuple0"}) : $Result.Err("not the right key code");};
+   var onEnter = F2(function (address,value) {
+      return A3($Html$Events.on,
+      "keydown",
+      A2($Json$Decode.customDecoder,$Html$Events.keyCode,is13),
+      function (_p0) {
+         return A2($Signal.message,address,value);
+      });
+   });
+   var inputStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "width",_1: "100%"}
+                                                   ,{ctor: "_Tuple2",_0: "height",_1: "40px"}
+                                                   ,{ctor: "_Tuple2",_0: "padding",_1: "10px 0"}
+                                                   ,{ctor: "_Tuple2",_0: "font-size",_1: "2em"}
+                                                   ,{ctor: "_Tuple2",_0: "text-align",_1: "center"}]));
+   _op["=>"] = F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};});
+   var SubMsg = F2(function (a,b) {    return {ctor: "SubMsg",_0: a,_1: b};});
+   var elementView = F2(function (address,_p1) {    var _p2 = _p1;return A2($RandomGif.view,A2($Signal.forwardTo,address,SubMsg(_p2._0)),_p2._1);});
+   var Create = {ctor: "Create"};
+   var Topic = function (a) {    return {ctor: "Topic",_0: a};};
    var view = F2(function (address,model) {
       return A2($Html.div,
-      _U.list([$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "display",_1: "flex"}]))]),
-      _U.list([A2($RandomGif.view,A2($Signal.forwardTo,address,Left),model.left),A2($RandomGif.view,A2($Signal.forwardTo,address,Right),model.right)]));
+      _U.list([]),
+      _U.list([A2($Html.input,
+              _U.list([$Html$Attributes.placeholder("What kind of gifs do you want?")
+                      ,$Html$Attributes.value(model.topic)
+                      ,A2(onEnter,address,Create)
+                      ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p3) {    return A2($Signal.message,address,Topic(_p3));})
+                      ,inputStyle]),
+              _U.list([]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"display","flex"),A2(_op["=>"],"flex-wrap","wrap")]))]),
+              A2($List.map,elementView(address),model.gifList))]));
    });
-   var Model = F2(function (a,b) {    return {left: a,right: b};});
-   var init = F2(function (leftTopic,rightTopic) {
-      var _p0 = $RandomGif.init(rightTopic);
-      var right = _p0._0;
-      var rightFx = _p0._1;
-      var _p1 = $RandomGif.init(leftTopic);
-      var left = _p1._0;
-      var leftFx = _p1._1;
-      return {ctor: "_Tuple2",_0: A2(Model,left,right),_1: $Effects.batch(_U.list([A2($Effects.map,Left,leftFx),A2($Effects.map,Right,rightFx)]))};
+   var Model = F3(function (a,b,c) {    return {topic: a,gifList: b,uid: c};});
+   var init = {ctor: "_Tuple2",_0: A3(Model,"",_U.list([]),0),_1: $Effects.none};
+   var update = F2(function (message,model) {
+      var _p4 = message;
+      switch (_p4.ctor)
+      {case "Topic": return {ctor: "_Tuple2",_0: _U.update(model,{topic: _p4._0}),_1: $Effects.none};
+         case "Create": var _p5 = $RandomGif.init(model.topic);
+           var newRandomGif = _p5._0;
+           var fx = _p5._1;
+           var newModel = A3(Model,"",A2($Basics._op["++"],model.gifList,_U.list([{ctor: "_Tuple2",_0: model.uid,_1: newRandomGif}])),model.uid + 1);
+           return {ctor: "_Tuple2",_0: newModel,_1: A2($Effects.map,SubMsg(model.uid),fx)};
+         default: var subUpdate = function (_p6) {
+              var _p7 = _p6;
+              var _p9 = _p7._0;
+              if (_U.eq(_p9,_p4._0)) {
+                    var _p8 = A2($RandomGif.update,_p4._1,_p7._1);
+                    var newRandomGif = _p8._0;
+                    var fx = _p8._1;
+                    return {ctor: "_Tuple2",_0: {ctor: "_Tuple2",_0: _p9,_1: newRandomGif},_1: A2($Effects.map,SubMsg(_p9),fx)};
+                 } else return {ctor: "_Tuple2",_0: _p7,_1: $Effects.none};
+           };
+           var _p10 = $List.unzip(A2($List.map,subUpdate,model.gifList));
+           var newGifList = _p10._0;
+           var fxList = _p10._1;
+           return {ctor: "_Tuple2",_0: _U.update(model,{gifList: newGifList}),_1: $Effects.batch(fxList)};}
    });
-   var update = F2(function (action,model) {
-      var _p2 = action;
-      if (_p2.ctor === "Left") {
-            var _p3 = A2($RandomGif.update,_p2._0,model.left);
-            var left = _p3._0;
-            var fx = _p3._1;
-            return {ctor: "_Tuple2",_0: A2(Model,left,model.right),_1: A2($Effects.map,Left,fx)};
-         } else {
-            var _p4 = A2($RandomGif.update,_p2._0,model.right);
-            var right = _p4._0;
-            var fx = _p4._1;
-            return {ctor: "_Tuple2",_0: A2(Model,model.left,right),_1: A2($Effects.map,Right,fx)};
-         }
-   });
-   return _elm.RandomGifPair.values = {_op: _op,Model: Model,init: init,Left: Left,Right: Right,update: update,view: view};
+   return _elm.RandomGifList.values = {_op: _op
+                                      ,Model: Model
+                                      ,init: init
+                                      ,Topic: Topic
+                                      ,Create: Create
+                                      ,SubMsg: SubMsg
+                                      ,update: update
+                                      ,view: view
+                                      ,elementView: elementView
+                                      ,inputStyle: inputStyle
+                                      ,onEnter: onEnter
+                                      ,is13: is13};
 };
 Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
@@ -11110,16 +11151,13 @@ Elm.Main.make = function (_elm) {
    $Effects = Elm.Effects.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
-   $RandomGifPair = Elm.RandomGifPair.make(_elm),
+   $RandomGifList = Elm.RandomGifList.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $StartApp = Elm.StartApp.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
-   var app = $StartApp.start({init: A2($RandomGifPair.init,"funny dogs","funny cats")
-                             ,update: $RandomGifPair.update
-                             ,view: $RandomGifPair.view
-                             ,inputs: _U.list([])});
+   var app = $StartApp.start({init: $RandomGifList.init,update: $RandomGifList.update,view: $RandomGifList.view,inputs: _U.list([])});
    var main = app.html;
    var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
    return _elm.Main.values = {_op: _op,app: app,main: main};
