@@ -10340,6 +10340,7 @@ Elm.Counter.make = function (_elm) {
                                                    ,{ctor: "_Tuple2",_0: "display",_1: "inline-block"}
                                                    ,{ctor: "_Tuple2",_0: "width",_1: "50px"}
                                                    ,{ctor: "_Tuple2",_0: "text-align",_1: "center"}]));
+   var Context = F2(function (a,b) {    return {actions: a,remove: b};});
    var update = F2(function (action,model) {    var _p0 = action;if (_p0.ctor === "Increment") {    return model + 1;} else {    return model - 1;}});
    var Decrement = {ctor: "Decrement"};
    var Increment = {ctor: "Increment"};
@@ -10350,8 +10351,17 @@ Elm.Counter.make = function (_elm) {
               ,A2($Html.div,_U.list([countStyle]),_U.list([$Html.text($Basics.toString(model))]))
               ,A2($Html.button,_U.list([A2($Html$Events.onClick,address,Increment)]),_U.list([$Html.text("+")]))]));
    });
+   var viewWithRemoveButton = F2(function (context,model) {
+      return A2($Html.div,
+      _U.list([]),
+      _U.list([A2($Html.button,_U.list([A2($Html$Events.onClick,context.actions,Decrement)]),_U.list([$Html.text("-")]))
+              ,A2($Html.div,_U.list([countStyle]),_U.list([$Html.text($Basics.toString(model))]))
+              ,A2($Html.button,_U.list([A2($Html$Events.onClick,context.actions,Increment)]),_U.list([$Html.text("+")]))
+              ,A2($Html.div,_U.list([countStyle]),_U.list([]))
+              ,A2($Html.button,_U.list([A2($Html$Events.onClick,context.remove,{ctor: "_Tuple0"})]),_U.list([$Html.text("X")]))]));
+   });
    var init = function (count) {    return count;};
-   return _elm.Counter.values = {_op: _op,init: init,update: update,view: view};
+   return _elm.Counter.values = {_op: _op,init: init,update: update,view: view,viewWithRemoveButton: viewWithRemoveButton,Context: Context};
 };
 Elm.CounterList = Elm.CounterList || {};
 Elm.CounterList.make = function (_elm) {
@@ -10375,24 +10385,27 @@ Elm.CounterList.make = function (_elm) {
       {case "Insert": var newCounter = {ctor: "_Tuple2",_0: model.nextID,_1: $Counter.init(0)};
            var newCounters = A2($Basics._op["++"],model.counters,_U.list([newCounter]));
            return _U.update(model,{counters: newCounters,nextID: model.nextID + 1});
-         case "Remove": return _U.update(model,{counters: A2($List.drop,1,model.counters)});
-         default: var updateCounter = function (_p1) {
-              var _p2 = _p1;
-              var _p4 = _p2._1;
-              var _p3 = _p2._0;
-              return _U.eq(_p3,_p0._0) ? {ctor: "_Tuple2",_0: _p3,_1: A2($Counter.update,_p0._1,_p4)} : {ctor: "_Tuple2",_0: _p3,_1: _p4};
+         case "Remove": return _U.update(model,{counters: A2($List.filter,function (_p1) {    var _p2 = _p1;return !_U.eq(_p2._0,_p0._0);},model.counters)});
+         default: var updateCounter = function (_p3) {
+              var _p4 = _p3;
+              var _p6 = _p4._1;
+              var _p5 = _p4._0;
+              return _U.eq(_p5,_p0._0) ? {ctor: "_Tuple2",_0: _p5,_1: A2($Counter.update,_p0._1,_p6)} : {ctor: "_Tuple2",_0: _p5,_1: _p6};
            };
            return _U.update(model,{counters: A2($List.map,updateCounter,model.counters)});}
    });
    var Modify = F2(function (a,b) {    return {ctor: "Modify",_0: a,_1: b};});
-   var viewCounter = F2(function (address,_p5) {    var _p6 = _p5;return A2($Counter.view,A2($Signal.forwardTo,address,Modify(_p6._0)),_p6._1);});
-   var Remove = {ctor: "Remove"};
+   var Remove = function (a) {    return {ctor: "Remove",_0: a};};
+   var viewCounter = F2(function (address,_p7) {
+      var _p8 = _p7;
+      var _p9 = _p8._0;
+      var context = A2($Counter.Context,A2($Signal.forwardTo,address,Modify(_p9)),A2($Signal.forwardTo,address,$Basics.always(Remove(_p9))));
+      return A2($Counter.viewWithRemoveButton,context,_p8._1);
+   });
    var Insert = {ctor: "Insert"};
    var view = F2(function (address,model) {
       var insert = A2($Html.button,_U.list([A2($Html$Events.onClick,address,Insert)]),_U.list([$Html.text("Insert")]));
-      var remove = A2($Html.button,_U.list([A2($Html$Events.onClick,address,Remove)]),_U.list([$Html.text("Remove")]));
-      var counters = A2($List.map,viewCounter(address),model.counters);
-      return A2($Html.div,_U.list([]),A2($Basics._op["++"],_U.list([remove,insert]),counters));
+      return A2($Html.div,_U.list([]),A2($List._op["::"],insert,A2($List.map,viewCounter(address),model.counters)));
    });
    var init = {counters: _U.list([]),nextID: 0};
    var Model = F2(function (a,b) {    return {counters: a,nextID: b};});
