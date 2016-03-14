@@ -10353,11 +10353,11 @@ Elm.Counter.make = function (_elm) {
    var init = function (count) {    return count;};
    return _elm.Counter.values = {_op: _op,init: init,update: update,view: view};
 };
-Elm.CounterPair = Elm.CounterPair || {};
-Elm.CounterPair.make = function (_elm) {
+Elm.CounterList = Elm.CounterList || {};
+Elm.CounterList.make = function (_elm) {
    "use strict";
-   _elm.CounterPair = _elm.CounterPair || {};
-   if (_elm.CounterPair.values) return _elm.CounterPair.values;
+   _elm.CounterList = _elm.CounterList || {};
+   if (_elm.CounterList.values) return _elm.CounterList.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Counter = Elm.Counter.make(_elm),
@@ -10369,26 +10369,42 @@ Elm.CounterPair.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var Bottom = function (a) {    return {ctor: "Bottom",_0: a};};
-   var Top = function (a) {    return {ctor: "Top",_0: a};};
-   var Reset = {ctor: "Reset"};
-   var view = F2(function (address,model) {
-      return A2($Html.div,
-      _U.list([]),
-      _U.list([A2($Counter.view,A2($Signal.forwardTo,address,Top),model.topCounter)
-              ,A2($Counter.view,A2($Signal.forwardTo,address,Bottom),model.bottomCounter)
-              ,A2($Html.button,_U.list([A2($Html$Events.onClick,address,Reset)]),_U.list([$Html.text("Reset")]))]));
-   });
-   var init = F2(function (top,bottom) {    return {topCounter: $Counter.init(top),bottomCounter: $Counter.init(bottom)};});
    var update = F2(function (action,model) {
       var _p0 = action;
       switch (_p0.ctor)
-      {case "Reset": return A2(init,5,9);
-         case "Top": return _U.update(model,{topCounter: A2($Counter.update,_p0._0,model.topCounter)});
-         default: return _U.update(model,{bottomCounter: A2($Counter.update,_p0._0,model.bottomCounter)});}
+      {case "Insert": var newCounter = {ctor: "_Tuple2",_0: model.nextID,_1: $Counter.init(0)};
+           var newCounters = A2($Basics._op["++"],model.counters,_U.list([newCounter]));
+           return _U.update(model,{counters: newCounters,nextID: model.nextID + 1});
+         case "Remove": return _U.update(model,{counters: A2($List.drop,1,model.counters)});
+         default: var updateCounter = function (_p1) {
+              var _p2 = _p1;
+              var _p4 = _p2._1;
+              var _p3 = _p2._0;
+              return _U.eq(_p3,_p0._0) ? {ctor: "_Tuple2",_0: _p3,_1: A2($Counter.update,_p0._1,_p4)} : {ctor: "_Tuple2",_0: _p3,_1: _p4};
+           };
+           return _U.update(model,{counters: A2($List.map,updateCounter,model.counters)});}
    });
-   var Model = F2(function (a,b) {    return {topCounter: a,bottomCounter: b};});
-   return _elm.CounterPair.values = {_op: _op,init: init,update: update,view: view,Model: Model};
+   var Modify = F2(function (a,b) {    return {ctor: "Modify",_0: a,_1: b};});
+   var viewCounter = F2(function (address,_p5) {    var _p6 = _p5;return A2($Counter.view,A2($Signal.forwardTo,address,Modify(_p6._0)),_p6._1);});
+   var Remove = {ctor: "Remove"};
+   var Insert = {ctor: "Insert"};
+   var view = F2(function (address,model) {
+      var insert = A2($Html.button,_U.list([A2($Html$Events.onClick,address,Insert)]),_U.list([$Html.text("Insert")]));
+      var remove = A2($Html.button,_U.list([A2($Html$Events.onClick,address,Remove)]),_U.list([$Html.text("Remove")]));
+      var counters = A2($List.map,viewCounter(address),model.counters);
+      return A2($Html.div,_U.list([]),A2($Basics._op["++"],_U.list([remove,insert]),counters));
+   });
+   var init = {counters: _U.list([]),nextID: 0};
+   var Model = F2(function (a,b) {    return {counters: a,nextID: b};});
+   return _elm.CounterList.values = {_op: _op
+                                    ,Model: Model
+                                    ,init: init
+                                    ,Insert: Insert
+                                    ,Remove: Remove
+                                    ,Modify: Modify
+                                    ,update: update
+                                    ,view: view
+                                    ,viewCounter: viewCounter};
 };
 Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
@@ -10397,7 +10413,7 @@ Elm.Main.make = function (_elm) {
    if (_elm.Main.values) return _elm.Main.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
-   $CounterPair = Elm.CounterPair.make(_elm),
+   $CounterList = Elm.CounterList.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
@@ -10405,6 +10421,6 @@ Elm.Main.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $StartApp$Simple = Elm.StartApp.Simple.make(_elm);
    var _op = {};
-   var main = $StartApp$Simple.start({model: A2($CounterPair.init,1,3),update: $CounterPair.update,view: $CounterPair.view});
+   var main = $StartApp$Simple.start({model: $CounterList.init,update: $CounterList.update,view: $CounterList.view});
    return _elm.Main.values = {_op: _op,main: main};
 };
